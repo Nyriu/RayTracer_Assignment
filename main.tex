@@ -1,13 +1,14 @@
 \documentclass{article}
 %documentclass[draft]{article}
 
-\usepackage[italian]{babel}
+%\usepackage[italian]{babel}
 \usepackage[utf8]{inputenc}
 
 
 \usepackage{graphicx} % Immagini fantastiche e...
 \graphicspath{        % dove trovarle
   {./images/},
+  {./images/2D/},
 }
 
 %% Bibliografia
@@ -68,7 +69,7 @@
 
 
 % Simboli matematici
-%\usepackage{amsthm}
+\usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsmath}
 %\usepackage{amsfonts}
@@ -95,8 +96,10 @@
 \newcommand{\viff}{\Updownarrow}
 \let\impl\Rightarrow
 
+\newcommand{\abs}[1]{\lvert #1 \lvert}
 \newcommand{\norm}[1]{\lvert\lvert #1 \lvert\lvert}
-\newcommand{\Norm}[1]{\Big\lvert \Big\lvert #1 \Big\lvert \Big\lvert}
+%% \newcommand{\Norm}[1]{\Big\lvert \Big\lvert #1 \Big\lvert \Big\lvert}
+
 
 \newcommand\N{\ensuremath{\mathbb{N}}}
 \newcommand\R{\ensuremath{\mathbb{R}}}
@@ -108,6 +111,8 @@
 \newcommand\E{\ensuremath{\mathbb{E}}}
 \newcommand\T{\ensuremath{\mathbb{T}}}
 \renewcommand\inf{\ensuremath{\infty}}
+
+\newtheorem{theorem}{Theorem}[section]
 
 
 
@@ -121,31 +126,34 @@
 %        Creo Prima Pagina         %
 % ================================ %
 
-\ThisCenterWallPaper{0.95}{polloPallido}
-% Intestazione
-% TODO Migliorare esteticamente
-\begin{titlepage}
- 	\centering
-  \Huge{\textbf{TODO}}\\
- 	[30mm]
- 	\centering
-  \Huge{\textbf{Student: Tristano Munini}}\\
- 	%[25mm]
-  %\raggedright
-  %\Large{\textbf{Corso:}}\\
-  %\Large{\textbf{TODO}}\\
- 	[125mm]
- 	\centering
-  \LARGE{\underline{\textbf{YEAR 2019-2020}}}\\
-\end{titlepage}
+% TODO enable
+%% \ThisCenterWallPaper{0.95}{polloPallido}
+%% % Intestazione
+%% % TODO Migliorare esteticamente
+%% \begin{titlepage}
+%%  	\centering
+%%   \Huge{\textbf{TODO}}\\
+%%  	[30mm]
+%%  	\centering
+%%   \Huge{\textbf{Student: Tristano Munini}}\\
+%%  	%[25mm]
+%%   %\raggedright
+%%   %\Large{\textbf{Corso:}}\\
+%%   %\Large{\textbf{TODO}}\\
+%%   % TODO add "Relatore"
+%%  	[125mm]
+%%  	\centering
+%%   \LARGE{\underline{\textbf{YEAR 2019-2020}}}\\
+%% \end{titlepage}
 
-%% ================================ %
-%%              Indice              %
-%% ================================ %
-\tableofcontents
-\thispagestyle{empty}
-\cleardoublepage
-\setcounter{page}{1}
+% TODO enable
+%% %% ================================ %
+%% %%              Indice              %
+%% %% ================================ %
+%% \tableofcontents
+%% \thispagestyle{empty}
+%% \cleardoublepage
+%% \setcounter{page}{1}
 
 
 % ================================ %
@@ -158,13 +166,13 @@
 %\pagenumbering{gobble} % TODO REMOVE
 
 
-%%\input{./chapters/x.tex}
-\input{./chapters/intro.tex}
-\clearpage
+%%%%\input{./chapters/x.tex}
+%%\input{./chapters/intro.tex}
+%%\clearpage
 \input{./chapters/SDF.tex}
-\clearpage
-\input{./chapters/conclusions.tex}
-\clearpage
+%%\clearpage
+%%\input{./chapters/conclusions.tex}
+%%\clearpage
 
 %% ================================ %
 %%           Bibliografia           %
