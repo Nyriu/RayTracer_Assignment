@@ -23,13 +23,6 @@ because in these application, after an initial low-res prototyping, the computer
 
 %In this document we are interested in 
 
-
-% TODO put after Rays and Cameras
-%\subsection{Sphere Tracing}
-%Introduced by Hart\cite{hart1996} in 1996, the sphere tracing algorithm gives an alternative to other ray tracers like ray marching.
-%\subsection{Ray Marching}
-%In ray marching $t$ is increased by a fixed amount until
-
 \subsection{Rays and Cameras}
 As we said before, the idea behind a ray tracer is to generate a ray for each pixel and check whether the ray hits a surface.
 If so it has also to find out if a light source lighten the point or if it is in shadow.
@@ -108,4 +101,70 @@ Knowing the fov angle $\alpha$ we just need to multiply the screen coordinates b
 The last thing to take in consideration is that out camera may not be always positioned in the world origin and look toward $-z$.
 To do so there are several options the one explained here is also 
 \todo[inline]{explain like if we are moving a point with a normal direction}
+
+
+
+
+
+\subsection{Sphere Tracing}
+Introduced by Hart\cite{hart1996} in 1996, the sphere tracing algorithm gives a better alternative to other ray tracers like ray marching.
+In ray marching each ray is analyzed by constant steps of $t$.
+We can detect a ray-surface contact using the sign of the distance function: when the ray enters the surface the distance became negative.
+Let's say that for a ray $r$, $d(r(t_k),S) > 0$ and $d(r(t_{k+1}),S) < 0$, for some instant $t_k$ and the following instant $t_{k+1}$ and an implicit surface $S$.
+Then using bisection on the segment between the two points $r(t_k)$ and $r(t_{k+1})$
+we look for the point $P$ on the segment for which $d(P,S) = 0$.
+To actually find this point $P$ on the surface $S$ can be costly, so usually it's found a point that is as near to the surface as a given threshold.
+
+We can speed up the algorithm by increasing the step size, i.e. $t_{k} - t_{k+1}$, but doing so leads two problems:
+performing bisection is slower because the segments are longer;
+if an object is small the algorithm may evaluate the ray just before and after the object, thus not seeing it.
+While the first problem can be managed, the second can cause completely wrong images to be produced.
+What we would like is an algorithm with an adaptable step size, to go fast when there are no surfaces near and to slow down when there are objects in the proximity: sphere tracing does that.
+
+Remember that before we said that $d(x,S)$ for some $x \in \R^3$ means we can move $x$ in every direction by $d(x,S)$ being sure at worst to just hit the surface.
+In other words we are drawing a safe sphere around the point, in which there is no surface.
+%If we evaluate the distance metric for each surface in the scene and take the minimum 
+Form the surface perspective this sphere is called an \emph{unbounding sphere}\cite{hart1996}, and the union of all the unbounding spheres describes the surface because no sphere penetrate the object.
+The concept is approximately the opposite of \emph{bounding volume}, a volume that surrounds the object, because here we define an area of space not containing the object.
+In sphere tracing the ray-surface intersection is determined by a sequence of unbounding spheres, as shown in \autoref{fig:hit_and_miss}.
+\begin{figure}[!htb]
+\minipage{0.40\textwidth}
+  \begin{lstlisting}
+  t = 0
+  while (t < D) {
+    d = f(r(t))
+    if (d < $\epsilon$) {
+      // intersection
+      reutrn t
+    }
+    t += d
+  }
+  // no intersection
+  return $\emptyset$
+  \end{lstlisting}
+  \caption{Pseudo code for the geometric implicit surface rendering algorithm}
+  \label{pscode:sphere_tracing}
+\endminipage\hfill
+\minipage{0.59\textwidth}
+  \includegraphics[width=\linewidth]{hit_and_miss.png}
+  \caption{A hit and a miss (image from \cite{hart1996})}
+  \label{fig:hit_and_miss}
+\endminipage
+\end{figure}
+
+The pseudo algorithm for rendering one implicit surface is listed in \autoref{pscode:sphere_tracing}.
+In the pseudocode $D$ is the maximum ray traversal distance 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
