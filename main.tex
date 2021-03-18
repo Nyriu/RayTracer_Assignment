@@ -9,6 +9,7 @@
 \graphicspath{        % dove trovarle
   {./images/},
   {./images/2D/},
+  {./images/3D/},
   {./images/scratchpixel/},
   {./images/hart1996/},
 }
@@ -103,6 +104,7 @@
 %% \newcommand{\Norm}[1]{\Big\lvert \Big\lvert #1 \Big\lvert \Big\lvert}
 
 
+
 \newcommand\N{\ensuremath{\mathbb{N}}}
 \newcommand\R{\ensuremath{\mathbb{R}}}
 \newcommand\Z{\ensuremath{\mathbb{Z}}}
@@ -115,6 +117,8 @@
 \renewcommand\inf{\ensuremath{\infty}}
 
 \newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
 
 
 
@@ -128,34 +132,32 @@
 %        Creo Prima Pagina         %
 % ================================ %
 
-% TODO enable
-%% \ThisCenterWallPaper{0.95}{polloPallido}
-%% % Intestazione
-%% % TODO Migliorare esteticamente
-%% \begin{titlepage}
-%%  	\centering
-%%   \Huge{\textbf{TODO}}\\
-%%  	[30mm]
-%%  	\centering
-%%   \Huge{\textbf{Student: Tristano Munini}}\\
-%%  	%[25mm]
-%%   %\raggedright
-%%   %\Large{\textbf{Corso:}}\\
-%%   %\Large{\textbf{TODO}}\\
-%%   % TODO add "Relatore"
-%%  	[125mm]
-%%  	\centering
-%%   \LARGE{\underline{\textbf{YEAR 2019-2020}}}\\
-%% \end{titlepage}
+\ThisCenterWallPaper{0.95}{polloPallido}
+% Intestazione
+% TODO Migliorare esteticamente
+\begin{titlepage}
+  ~\\
+  [50mm]
+ 	\centering
+  \Huge{\textbf{Interactive 3D Renderer of Implicit Surfaces}}\\
+ 	[50mm]
+  \Large{\textbf{
+      Student: Tristano Munini \\
+  Supervisor: Ivan Scagnetto
+  }}\\
+ 	%[125mm]
+ 	[45mm]
+ 	\centering
+  \LARGE{\underline{\textbf{ACADEMIC YEAR 2020-2021}}}\\
+\end{titlepage}
 
-% TODO enable
-%% %% ================================ %
-%% %%              Indice              %
-%% %% ================================ %
-%% \tableofcontents
-%% \thispagestyle{empty}
-%% \cleardoublepage
-%% \setcounter{page}{1}
+%% ================================ %
+%%              Indice              %
+%% ================================ %
+\tableofcontents
+\thispagestyle{empty}
+\cleardoublepage
+\setcounter{page}{1}
 
 
 % ================================ %

@@ -153,18 +153,142 @@ In sphere tracing the ray-surface intersection is determined by a sequence of un
 \end{figure}
 
 The pseudo algorithm for rendering one implicit surface is listed in \autoref{pscode:sphere_tracing}.
-In the pseudocode $D$ is the maximum ray traversal distance 
+In the pseudocode $D$ is the maximum ray traversal distance, $\epsilon$ is the minimum distance from a surface to consider a hit, $t$ and $r(t)$ are the usual ones and $f$ can be a DIF or a DUF.
+As said before the DUFs are ``more cautious" because are a lower bound to the maximum distance traversable without hitting the surface.
+When we can't use the exact signed distance function of the surface we can use safely its bound, knowing that the convergence will be slower because the algorithm will make more steps.
+The following theorem from \cite{hart1996} shows that the speed drop is negligible because the algorithm is still linear even if we are using a signed distance bound.
+We look at sphere tracing as a root finding algorithm.
+\begin{theorem}
+Given a function $f: \R \to \R$ with the Lipschitz bound $\lambda \geq Lip(f)$ and an initial point $t_0$, sphere tracing converges linearly to the smallest root grater than $t_0$.
+\end{theorem}
+\begin{proof}
+  We can write the sphere sequence as
+  \begin{equation}\label{eq:st_seq}
+  t_{i+1} = g(t_i) = t_i + \dfrac{\abs{f(t_i)}}{\lambda}
+  \end{equation}
+  %https://en.wikipedia.org/wiki/Newton%27s_method
+  to emphasize the similarities with the Newton's root finding method.
+  Let $r$ be the smallest be the smallest root greater than the initial point $t_0$.
+  Since $f(r) = 0$, then $g(r) = r$, and at any non root $\abs{f(t_i)}/\lambda$ is positive.
+  Hence \autoref{eq:st_seq} converges to the first root.
+  Without loss of generality we assume $f$ to be non-negative in the region of interest, eliminating the need for the absolute value.
+  %https://en.wikipedia.org/wiki/Taylor_series
+  The Taylor expansion of $f(t_i)$ about the root $r$ is:
+  \begin{equation}\label{eq:st_taylor}
+    g(t_i) = g(r) + (t_i - r) g'(r) + \dfrac{(t_i - r)^2}{2} g''(\tau)
+  \end{equation}
+  for some $\tau \in [t_i, r]$ and $g'(r) = 1 + f'(y)/\lambda$.
+  The error term becomes:
+  \begin{align*}
+    e_{i+1} &= t_{i+1} - r = g(t_i) - g(r) =\\
+            &= g'(r)e_i + \text{higher-order terms}
+  \end{align*}
+  Since $g'(r)$ is constant in the iteration \autoref{eq:st_seq} converges linearly to $y$.
+\end{proof}
+\begin{corollary}
+  Sphere tracing converges quadratically if and only if the function is steepest at its first root.
+\end{corollary}
+\begin{proof}
+  In the event that $f'(r) = - \lambda$, the linear term of the error of \autoref{eq:st_taylor} drops out, leaving the quadratic and higher-order terms.
+\end{proof}
+
+One thing to highlight is about the rays that pass near a surface without hitting it.
+Such rays will slow down because their distance to the surface becomes smaller and smaller until theyy pass over it, as shown in \autoref{fig:hit_and_miss}.
+This effect can be seen in practice coloring the pixels with respect to the number of steps the ray had to do before hitting something or traversing the maximum distance.
+
+\todo[inline]{generate image with pixel colored according to steps num}
+\begin{figure}[!htb]
+  \centering
+  %\includegraphics[width=\linewidth]{img_02.png}
+  \includegraphics[width=.8\linewidth]{example-image-a}
+  %\caption{TODO}
+  %\label{fig:union}
+\end{figure}
 
 
 
 
 
 
+%\subsection{Shading and Lightning}
+\subsection{Lightning and Shadows}
+
+%In computer graphics, a shading function is defined as a function which yields the intensity value of each point on the body of an object from the characteristics of the light source, the object, and the position of the observer. Phong - 1975.
+
+%To compute properly the color of surface lighted by a ray of light at least we need 
+
+Shading is a complex field and here we address only the problem of computing simple lighting and hard shadows, leaving for future improvements topics as non punctual lights, reflection, refraction, and semi-transparent objects.
+
+Even in this simplified setting we need to compute the surface normal at a point, 
+that's because we need to know the quantity of light that the point receives, i.e. If the surface is facing or not the light source.
+Because we are handling implicit functions we can't rely on already existing information, as happens with ``classic" rendering and \emph{.obj} files for example.
+We need to compute the surface's normal at a point with only its implicit definition.
+To do so we can take advantage of the gradient of the function.
+Remembering that the gradient is the rate-of-change of the function over a direction, given $f$ we want to compute the gradients with respect to $(1,0,0)$, $(0,1,0)$ and $(0,0,1)$.
+These results combined will form a 3D vector, which after being normalized becomes the normal we are looking for.
+
+More formally, we define $\nabla f$ as the gradient of the implicit function $f(x,y,z)$ and let $P = \left< x_0, y_0, z_0 \right>$ be a point on the surface, thus $f(x_0, y_0, z_0) = 0$.
+All we need to do is to observe the rate-of-change in the proximity of $P$,
+this can be done numerically with 
+\begin{align*}
+  \nabla f_{x_0} &= f(x_0+\delta, y_0       , z_0       ) - f(x_0-\delta, y_0       , z_0)\\
+  \nabla f_{y_0} &= f(x_0       , y_0+\delta, z_0       ) - f(x_0       , y_0-\delta, z_0)\\
+  \nabla f_{z_0} &= f(x_0       , y_0       , z_0+\delta) - f(x_0       , y_0       , z_0-\delta)\\
+  \nabla f   &= \left< \nabla f_{x_0}, \nabla f_{y_0}, \nabla f_{z_0} \right>
+\end{align*}
+The following steps assure us that $\nabla f$ has actually the normal's direction.
+First we define
+$$h(t) = \left< x(t), y(t), z(t) \right>$$
+to be a parametric definition of a curve that lies on the surface and that passes through $P$.
+We also define 
+$$g(t) = f(h(t)) = 0$$
+Note that exists a particular $t_0$ such that
+$$g(t_0) = f(h(t_0)) = f(x(t_0), y(t_0), z(t_0)) = f(x_0, y_0, z_0) = f(P)$$ %%f(x_0, y_0, z_0) = 0$$
+Now we can calculate the gradient at 
+\begin{align*}
+  \dfrac{dg}{dt} &=
+\dfrac {\partial f} {\partial x} \bigg\rvert_{P} \dfrac {d x} {d t} \bigg\rvert_{t_0} + \dfrac {\partial f} {\partial y} \bigg\rvert_{P}\dfrac {d y} {d t} \bigg\rvert_{t_0} + \dfrac {\partial f} {\partial z} \bigg\rvert_{P}\dfrac {d z} {d t} \bigg\rvert_{t_0}
+=\\
+                 &= \left< \dfrac {\partial f} {\partial x} \bigg\rvert_{P}, \dfrac {\partial f} {\partial y} \bigg\rvert_{P}, \dfrac {\partial f} {\partial z} \bigg\rvert_{P} \right> \cdot \left<  \dfrac {d x} {d t} \bigg\rvert_{t_0}  \dfrac {d y} {d t} \bigg\rvert_{t_0}  \dfrac {d z} {d t} \bigg\rvert_{t_0} \right> = 0 %\\
+%\leftrightarrow \nabla f|_P \cdot r'(t_0) = 0.
+\end{align*}
+The equation comes from the higher dimensions version of the chain rule $g'(t) = h'(t) \cdot f'(g(t))$.
+The vector form comes from $a \cdot b = a_x b_x + a_y b_y + a_z b_z$, and highlight the perpendicularity between the two vectors.
+
+Now that we have the surface normal $N$ at $P$ we can use it inside a rendering equation that, in simple words, gives the amount of light reflected by the surface.
+Putting in formulas
+$$
+\dfrac{ (n \cdot l) c_{light} }
+{ 4 \pi }
+$$
+where $n$ is the surface normal, $l$ a unit vector pointing the light and $c_{light}$ its color.
+Remember that the dot product $n \cdot l$ gives the cosine of the angle of indicente of the light rays.
+The denominator comes from the solution of an integral over a hemisphere centered in $P$, more on shading in \cite{real_time_rendering}.
+If there are more light sources we can just iterate over them and sum the contribution of each.
+We can also consider adding an ambient light to give a minimum lighting to all the surfaces, thus removing the completely black areas from the image.
+
+For what concerns shadow we can just cast a second ray from $P$ towards a light.
+We follow the ray until we hit either a surface or the light itself:
+in the first case we just stop computing this light's contribution to the shading of $P$ (its contribution is equal to zero because no light ray can reach the point);
+in the second we procede as described before.
+The ray can be computed with a modified version of the sphere tracing algorithm that stops at the first surface hit.
+\begin{figure}[!htb]
+  \includegraphics[width=\linewidth]{img_02.png}
+  \caption{A scene with 3 torus, a big sphere (the terrain) and two point lights rendered with hard shadows and no anti-aliasing.}
+  %\label{fig:union}
+\end{figure}
+
+\subsection{Anti-Aliasing}
+\todo[inline]{re-read hart1996 and scratchpixel on cone tracing}
+
+\begin{itemize}
+  \item what is and why we cannot remove it completely from RayTraced imgs \cite{rt_groundup}
+
+%% Scratch Pixel notes
+  \item simple method: supersampling as described and implemented in \cite{rt_one_weekend}
+  \item in \cite{hart1996} proposes an interesting method that takes advantage of sphere tracing algorithm nature.
 
 
 
 
-
-
-
-
+\end{itemize}
