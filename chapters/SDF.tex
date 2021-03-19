@@ -13,29 +13,55 @@ As an example, the unit sphere can be defined with the algebraic implicit equati
 $$ x^2 + y^2 + z^2 - 1 = 0 $$
 or geometrically with
 $$ \norm{x} - 1= 0 $$
-where $x \in \R^3$ and $\norm{\cdot}$ is the Euclidean magnitude.
+where $x \in \R^3$ and $\norm{\cdot}$ is the Euclidean magnitude $\sqrt{x^2 + y^2 + z^2}$
+.
 In this document we will not analyze the differences between the two representations because we will use simple surfaces, for which the equations can be translated easily from one form to the other.
-Note that the two equations have the same value, i.e. zero, when the provided point belong to the surface, and both became negative when the point is inside the surface.
-
-Formalizing, we can say that a \emph{distance surface} is implicitly defined by a function 
+Note that the two equations have the same value, i.e. Zero, when the provided point belong to the surface, and both became negative when the point is inside the surface.
+% Formalizing, we can say a \emf{distance surface} is implicitly defined by a function 
+\begin{definition}[Distance Surface]
+  A distance surface is implicitly defined by a function 
 $f : \R^3 \to \R$ that characterizes $A \subset \R^3$, set of points that are on or inside the implicit surface:
 $$ A = \{ x: f(x) \leq 0\} $$
+\end{definition}
+\noindent
 The surface can be also defined with $f^{-1}(0)$, which gives exactly the points on the surface.
 Even if the continuity of $f$ and its negativity on the interior of the surface are not strictly necessary properties, they come useful in practice so, when possible, they are preferable.
 We can define the surface from the outside using a \emph{point-to-set} distance:
 $$
 d(x,A) = min_{y \in A} \norm{x - y}
 $$
-Thus $d(x,A)$, given a point $x$, returns the shortest distance to the surface defined by $A$.
-We say that $f: \R^3 \to \R$ is a \emph{signed distance bound} of its implicit surface $f^{-1}(0)$ if and only if
-$$
+Thus $d(x,A)$, given a point $x \in \R^3$, returns the shortest distance to the surface defined by $A$.
+Note that here we interchange $d(x,A)$ with $d(x, f^{-1}(0))$ even if they are slightly different.
+We can do that because usually we'll handle points that aren't in surfaces interiors\footnote{
+  In the implementation one must consider this cases e.g. the camera (wrongly) is inside an object
+}.
+%%We say that $f: \R^3 \to \R$ is a \emph{signed distance bound} of its implicit surface $f^{-1}(0)$ if and only if
+%%$$
+%%\abs{f(x)} \leq d(x,f^{-1}(0))
+%%$$
+\begin{definition}[Signed Distance Bound]
+We say that $f: \R^3 \to \R$ is a signed distance bound of its implicit surface $f^{-1}(0)$ if and only if
+\begin{equation}\label{eq:sdb}
 \abs{f(x)} \leq d(x,f^{-1}(0))
-$$
-Here we are saying that $f$ is always at least as cautious as the true distance function $d(x,f^{-1}(0))$.
-This mean that we can move $x$ by $f(x)$ in every direction and in the worst case (or best) we'll just hit the surface.
-Using $f$ we'll never get to the interior of the surface.
-When the equality holds, $f$ is a \emph{signed distance function} (SDF) and returns the exact distance to the surface, so moving $x$ by this distance (in the right direction) means putting it exactly on the implicit surface.
+\end{equation}
+\end{definition}
 
+\noindent
+In other words, the definition says that $f$ is always at least as cautious as the true distance function $d(x,f^{-1}(0))$.
+This means that we can move $x$ by $d(x,f^{-1}(0))$ in every direction and in the worst case (or best) we'll just hit the surface.
+%Using $f$ we'll never get to the interior of the surface.
+Moving in this way we'll never put the point at the interior of the surface.
+%When in \autoref{eq:sdb} holds the equality, $f$ is a \emph{signed distance function} (SDF) and returns the exact distance to the surface, so moving $x$ by this distance (in the right direction) means putting it exactly on the implicit surface.
+
+\begin{definition}[Signed Distance Function]
+We say that $f$ is a signed distance function (SDF) when holds
+\begin{equation}\label{eq:sdf}
+\abs{f(x)} = d(x,f^{-1}(0))
+\end{equation}
+\end{definition}
+
+\noindent
+An SDF returns the exact distance to the surface, so moving $x$ by this distance (in the right direction) means putting it exactly on the implicit surface $f^{-1}(0)$.
 In the introductory article
 \emph{``Rendering Implicit Surfaces and Distance Fields: Sphere Tracing"}\cite{scratch_sdf}
 by \url{scratchapixel.com},
@@ -47,15 +73,20 @@ Remembering that $DUF(x) \leq DIF(x)$ for every DUFs and DIFs that respect the d
 % TODO Nice imgs?
 % https://www.scratchapixel.com/images/upload/distance-fields/sphere-tracing-fig7.png?
 
+For simple shapes we can derive SDFs by hand, but when it's not feasible we can use the Lipschitz constant $\lambda$, as Hart\cite{hart1996} suggested.
 
-For simple shapes we can derive SDFs by hand, but when it's not feasible we can use the Lipschitz constant $\lambda$, as Hart suggested \cite{hart1996}.
-We say that a function $f : \R^3 \to \R$ is \emph{Lipschitz over a domain D} if and only if there is a positive, finite, constant $\lambda$ such that
-$$
+\begin{definition}{Lipschitz Function}
+We say that a function $f : \R^3 \to \R$ is Lipschitz over a domain $D$ if and only if there is a positive, finite, constant $\lambda$ such that
+\begin{equation}\label{eq:lip_fun}
 \abs{f(x) - f(y)} \leq \lambda \norm{x - y}
-$$
+\end{equation}
 Such $\lambda$ is called the Lipschitz constant.
-Of course there is no upper limit to $\lambda$, but there is a lower bound; the function $Lip(f)$ return such minimum value.
-Reworking the formula we can observe that
+\end{definition}
+\noindent
+Of course there is no upper limit to $\lambda$, but there is a lower bound.
+Let $Lip(f)$ be the function returning such minimum value.
+Reworking \autoref{eq:lip_fun} we can observe that
+% commenta i passaggi
 \begin{align*}
   \lambda &\geq \dfrac{\abs{f(x) - f(y)}}{\norm{x - y}} \\
   \lambda &\geq \dfrac{f(x) - f(y)}{\norm{x - y}}\\
