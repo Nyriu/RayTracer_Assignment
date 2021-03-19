@@ -278,17 +278,69 @@ The ray can be computed with a modified version of the sphere tracing algorithm 
   %\label{fig:union}
 \end{figure}
 
-\subsection{Anti-Aliasing}
+
+\clearpage
+
+\subsection{Anti-Aliasing}%
 \todo[inline]{re-read hart1996 and scratchpixel on cone tracing}
+Since in ray tracing a scene is discretized in a finite number of pixel using sampling, ray tracing is subject to aliasing.
+This topic is discussed extensively in \cite{rt_groundup} and with a particular attention towards sphere tracing and Hart's method in \cite{hart1996, scratch_sdf}, 
+It's important to note that we can not resolve in a definitive way the aliasing problem, we can only mitigate its effects with anti-aliasing techniques.
 
-\begin{itemize}
-  \item what is and why we cannot remove it completely from RayTraced imgs \cite{rt_groundup}
+One of the easiest approach is super sampling in which we trace several rays for each pixel and average the results, as described and implemented in \cite{rt_one_weekend}.
+The sampling can be done in different ways and with different weights for each ray contribution.
+A common choice is to decide the number of rays per pixel and give a random perturbation to each rays' direction.
+Obviously this approach weighs on the hardware, because computationally is similar to computing a bigger image.
 
-%% Scratch Pixel notes
-  \item simple method: supersampling as described and implemented in \cite{rt_one_weekend}
-  \item in \cite{hart1996} proposes an interesting method that takes advantage of sphere tracing algorithm nature.
+In \cite{hart1996} Hart proposes an interesting method that takes advantage of sphere tracing algorithm's nature: we can replace rays with cones.
+Visually the idea is represented in \autoref{fig:cone}, here the cone is approximated with the pixel's volumetric extension.
+\begin{figure}[!htb]
+\minipage{0.65\textwidth}
+  \includegraphics[width=\linewidth]{cone.png}
+  \caption{TODO caption}
+  \label{fig:cone}
+\endminipage\hfill
+\minipage{0.34\textwidth}
+  \includegraphics[width=\linewidth]{cone_section.png}
+  \caption{TODO caption}
+  \label{fig:cone_section}
+\endminipage
+\end{figure}
+Usually intersecting cones with objects is difficult but here we can use the concept of unbounding spheres.
+Assuming image plane 1 unit (in world coordinates) away form camera's eye, with $r = 2 \dfrac {\tan(\alpha / 2)}{N_H} t$, where $\alpha$ is the fov of the camera, we can compute the pixel size at distance $t$.
+Pixel size at $t$ can be used to estimate the cone radius at $t$.
+The formula is similar to the one used to handle the camera fov, but here we divide the value by $N_H$ because we want the size of a single pixel.
 
+As sphere tracing progresses along the ray, if the distance $d$ returned by a DUF produces an unbounding sphere that projects to an area smaller than a pixel on the screen, then this is considered a cone intersection.
+That's because the sphere at least touches the surface and the cone contains the sphere, so it must be that also the cone intersects the surface.
+In this case the point along the ray is treated as if it were on the surface, and the corresponding pixel is shaded as in a surface-hit situation.
+A section at $t$ of the cone, a sphere, a pixel and a surface is shown in \autoref{fig:cone_section}.
+Following the description in \cite{scratch_sdf}, the anti-aliasing algorithms has the following steps.
+\begin{enumerate}
+  \item For each pixel
+  \item init pixel's color with black;
+  \item evaluate the ray at $t$;
+  \item if the object is at a distance $d \leq \epsilon$ then the ray intersects the object.
+    Shade the object, save the result on the pixel and return;
+  \item if the object is at a distance $d \leq r$ then add the shading result blending it with the pixel's color;
+  \item else move along the ray by $d$ and repeat the loop;
+  \item when $t > D$, return the pixel's color.
+\end{enumerate}
+Every time $d \leq r$ we compute a partial coverage of the intersected object over the area of the pixel, look at \autoref{fig:cone_section}.
+We accumulate the result with alpha blending, using the following formulas:
+\begin{align*}
+  \alpha &= \dfrac {1}{2} - \dfrac {d \sqrt{r^2 - d^2}} {\pi r^2} - \dfrac{1}{\pi}\arcsin \dfrac {d}{r}\\
+  c &= c_1 + c_2 (1 - \alpha_1)
+\end{align*}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.4\linewidth]{cone_problem.png}
+  \caption{TODO caption}
+  \label{fig:cone_problem}
+\end{figure}
+Even if overall the method seems easy in the implementations we need to be careful.
+As shown in \autoref{fig:cone_problem} we risk to add several contributions of the same object.
+One solution could be storing each possible contribution and use only the one with the smallest $d$ to actually modify the pixel's color.
+This must be done whenever the ray passes sufficiently near to surface.
 
-
-
-\end{itemize}
+\todo[inline]{Here images with anti-aliasing enabled}
