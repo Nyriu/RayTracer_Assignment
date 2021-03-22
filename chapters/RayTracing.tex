@@ -8,18 +8,19 @@
 In the introduction of the book ``Ray Tracing from the Ground Up"\cite{rt_groundup} the author loosely defines two classes of renderers: projective algorithms and image-space algorithms.
 The former nowadays is the most popular because it's based on the graphics pipeline model and can easily take advantage of modern graphics cards.
 The basic idea is to project the objects on the scene into a 2D plane and then compute the appearance of the objects that can be seen.
-The image-space algorithms start from the pixel and try %to follow backward the 
+On the other hand, the image-space algorithms start from the pixel and try %to follow backward the 
 to figure out where the light came form for that pixel.
 Following the light's path we can compute hard shadows, soft shadows, reflection, refraction,
  depth of field, motion blur, caustics, ambient occlusion, indirect lighting and other effects.
-But following every light ray's bounce it's extremely costly, especially if there are a lot of light sources in the scene, and that's why this approach historically wasn't the one to be used for interactive application.
-Instead, given the high quality and fidelity that this method can achieve, it's been widely used to create movies, clips and images,
+But following every light ray's bounce it's extremely costly, especially if there are several light sources in the scene, and that's why this approach historically wasn't the one to be used for interactive application.
+Instead, given the high quality and fidelity this method can achieve, it's been widely used to create movies, clips and images,
 %because, after an initial low-res prototyping, the computer can take all the resources and produce the best image
-because in these application, after an initial low-res prototyping, the computer can elaborate the final product even for days.
+In these application, after an initial low-res prototyping, the computer can elaborate the final product even for days.
 
 %Today, both the techniques and the hardware have improved and the ray tracing is been integrated
 
-\todo[inline]{say that the rt is being used also in real time application, blended with standard pipeline}
+%TODO?
+%\todo[inline]{say that the rt is being used also in real time application, blended with standard pipeline}
 
 %In this document we are interested in 
 
@@ -70,18 +71,18 @@ camera position and orientation are the more obvious, but also the field of view
 %Actually there are more 
 First of all we need to derive the rays' direction with the pixel's centers on the image plane (the rectangle with a grid) and the camera origin (also called \emph{eye}).
 But these two values refers to different coordinate systems because the pixel position refers to the top left corner of the image plane and the camera origin is defined in world coordinates.
-Here with world coordinates we mean the coordinate system with which the object (and the camera) are placed on the scene.
-One way to solve this problem is to produce the rays as if the camera was placed in the origin looking towards $-z$ and then transate and rotate the rays according to the true camera position and orientation.
+Here with world coordinates we mean the coordinate system with which the object (and the camera) are placed in the scene.
+One way to solve this problem is to produce the rays as if the camera was placed in the origin looking towards $-z$ and then translate and rotate the rays according to the true camera position and orientation.
 
 In order to do so we need to remove the dependency from the actual output image size.
 Given two coordinates in raster space we normalize them by dividing respectively by the image width and height.
 Now the coordinate are in Normalized Device Coordinates (NDC) space.
-Actually the precise operation is the following, in which we also move the coordinate in pixels center:
+Actually the precise operation is the following, in which we also offset the coordinate to be in the pixel's center:
 \begin{align*}
   PixelNDC_x &= \dfrac{(Pixel_x + 0.5)}{ImageWidth}\\
   PixelNDC_y &= \dfrac{(Pixel_y + 0.5)}{ImageHeight}
 \end{align*}
-Now we have to map this coordinates form $[0,1]$ into $[-1,1]$ because the eye of the camera is at the origin, so the center of the image plane (also called screen) is on the $z$-axis.
+Now we have to map this coordinates form $[0,1]$ into $[-1,1]$ because the eye of the camera is at the origin, so the center of the image plane (also called screen or screen plane) is on the $z$-axis.
 In practice we are aligning the sign of the four quadrants of the $xy$-plane in world coordinates with the image plane.
 \begin{align*}
   PixelScreen_x &= (2 * PixelNDC_x - 1) * AspectRatio\\
@@ -113,9 +114,9 @@ We can detect a ray-surface contact using the sign of the distance function: whe
 Let's say that for a ray $r$, $d(r(t_k),S) > 0$ and $d(r(t_{k+1}),S) < 0$, for some instant $t_k$ and the following instant $t_{k+1}$ and an implicit surface $S$.
 Then using bisection on the segment between the two points $r(t_k)$ and $r(t_{k+1})$
 we look for the point $P$ on the segment for which $d(P,S) = 0$.
-To actually find this point $P$ on the surface $S$ can be costly, so usually it's found a point that is as near to the surface as a given threshold.
+To actually find this point $P$ on the surface $S$ can be costly, so usually a point that is as near to the surface as a given threshold is found.
 
-We can speed up the algorithm by increasing the step size, i.e. $t_{k} - t_{k+1}$, but doing so leads two problems:
+We can speed up the algorithm by increasing the step size, i.e. $\abs{t_{k} - t_{k+1}}$, but doing so leads two problems:
 performing bisection is slower because the segments are longer;
 if an object is small the algorithm may evaluate the ray just before and after the object, thus not seeing it.
 While the first problem can be managed, the second can cause completely wrong images to be produced.
@@ -152,6 +153,7 @@ In sphere tracing the ray-surface intersection is determined by a sequence of un
 \endminipage
 \end{figure}
 
+\noindent
 The pseudo algorithm for rendering one implicit surface is listed in \autoref{pscode:sphere_tracing}.
 In the pseudocode $D$ is the maximum ray traversal distance, $\epsilon$ is the minimum distance from a surface to consider a hit, $t$ and $r(t)$ are the usual ones and $f$ can be a DIF or a DUF.
 As said before the DUFs are ``more cautious" because are a lower bound to the maximum distance traversable without hitting the surface.
@@ -193,16 +195,16 @@ Given a function $f: \R \to \R$ with the Lipschitz bound $\lambda \geq Lip(f)$ a
 \end{proof}
 
 One thing to highlight is about the rays that pass near a surface without hitting it.
-Such rays will slow down because their distance to the surface becomes smaller and smaller until theyy pass over it, as shown in \autoref{fig:hit_and_miss}.
-This effect can be seen in practice coloring the pixels with respect to the number of steps the ray had to do before hitting something or traversing the maximum distance.
-
-\todo[inline]{generate image with pixel colored according to steps num}
+Such rays will slow down because their distance to the surface becomes smaller and smaller until they pass over it, as shown in \autoref{fig:hit_and_miss}.
+This effect can be seen in practice coloring the pixels with respect to the number of steps the ray had to do before hitting something or traversing the maximum distance, take a look at \autoref{fig:st_comput_cost}.
+%\todo[inline]{generate image with pixel colored according to steps num}
 \begin{figure}[!htb]
   \centering
   %\includegraphics[width=\linewidth]{img_02.png}
-  \includegraphics[width=.8\linewidth]{example-image-a}
-  %\caption{TODO}
-  %\label{fig:union}
+  %\includegraphics[width=.8\linewidth]{example-image-a}
+  \includegraphics[width=.8\linewidth]{st_pixel_comput_cost.png}
+  \caption{This is a scratchpixel img, TODO generate img with my version}
+  \label{fig:st_comput_cost}
 \end{figure}
 
 
@@ -220,8 +222,8 @@ This effect can be seen in practice coloring the pixels with respect to the numb
 Shading is a complex field and here we address only the problem of computing simple lighting and hard shadows, leaving for future improvements topics as non punctual lights, reflection, refraction, and semi-transparent objects.
 
 Even in this simplified setting we need to compute the surface normal at a point, 
-that's because we need to know the quantity of light that the point receives, i.e. If the surface is facing or not the light source.
-Because we are handling implicit functions we can't rely on already existing information, as happens with ``classic" rendering and \emph{.obj} files for example.
+that's because we need to know the quantity of light that the point receives, i.e. if the surface is facing or not the light source.
+Because we are handling implicit functions we can't rely on already existing information, as happens with graphics pipeline rendering and \emph{.obj} files for example.
 We need to compute the surface's normal at a point with only its implicit definition.
 To do so we can take advantage of the gradient of the function.
 Remembering that the gradient is the rate-of-change of the function over a direction, given $f$ we want to compute the gradients with respect to $(1,0,0)$, $(0,1,0)$ and $(0,0,1)$.
@@ -262,7 +264,7 @@ $$
 { 4 \pi }
 $$
 where $n$ is the surface normal, $l$ a unit vector pointing the light and $c_{light}$ its color.
-Remember that the dot product $n \cdot l$ gives the cosine of the angle of indicente of the light rays.
+Remember that the dot product $n \cdot l$ gives the cosine of the angle of incidence of the light rays.
 The denominator comes from the solution of an integral over a hemisphere centered in $P$, more on shading in \cite{real_time_rendering}.
 If there are more light sources we can just iterate over them and sum the contribution of each.
 We can also consider adding an ambient light to give a minimum lighting to all the surfaces, thus removing the completely black areas from the image.
@@ -277,12 +279,9 @@ The ray can be computed with a modified version of the sphere tracing algorithm 
   \caption{A scene with 3 torus, a big sphere (the terrain) and two point lights rendered with hard shadows and no anti-aliasing.}
   %\label{fig:union}
 \end{figure}
+\todo[inline]{Add image without lighting/shading for comparison}
 
-
-\clearpage
-
-\subsection{Anti-Aliasing}%
-\todo[inline]{re-read hart1996 and scratchpixel on cone tracing}
+\subsection{Anti-Aliasing}
 Since in ray tracing a scene is discretized in a finite number of pixel using sampling, ray tracing is subject to aliasing.
 This topic is discussed extensively in \cite{rt_groundup} and with a particular attention towards sphere tracing and Hart's method in \cite{hart1996, scratch_sdf}, 
 It's important to note that we can not resolve in a definitive way the aliasing problem, we can only mitigate its effects with anti-aliasing techniques.
@@ -297,31 +296,33 @@ Visually the idea is represented in \autoref{fig:cone}, here the cone is approxi
 \begin{figure}[!htb]
 \minipage{0.65\textwidth}
   \includegraphics[width=\linewidth]{cone.png}
-  \caption{TODO caption}
+  \caption{Pixel volumetric extension}
   \label{fig:cone}
 \endminipage\hfill
 \minipage{0.34\textwidth}
   \includegraphics[width=\linewidth]{cone_section.png}
-  \caption{TODO caption}
+  \caption{A section of cone, pixel extension and unbounding sphere}
   \label{fig:cone_section}
 \endminipage
 \end{figure}
-Usually intersecting cones with objects is difficult but here we can use the concept of unbounding spheres.
-Assuming image plane 1 unit (in world coordinates) away form camera's eye, with $r = 2 \dfrac {\tan(\alpha / 2)}{N_H} t$, where $\alpha$ is the fov of the camera, we can compute the pixel size at distance $t$.
+Intersecting cones with objects is difficult but here we can use the concept of unbounding spheres.
+Assuming image plane 1 unit (in world coordinates) away form camera's eye, with
+$$r = 2 \dfrac {\tan(\alpha / 2)}{N_H} t$$
+where $\alpha$ is the fov of the camera, we can compute the pixel size at distance $t$.
 Pixel size at $t$ can be used to estimate the cone radius at $t$.
-The formula is similar to the one used to handle the camera fov, but here we divide the value by $N_H$ because we want the size of a single pixel.
+The formula is similar to the one used to handle the camera fov, but here we divide the value by $N_H$ because we want the size relative to a single pixel.
 
 As sphere tracing progresses along the ray, if the distance $d$ returned by a DUF produces an unbounding sphere that projects to an area smaller than a pixel on the screen, then this is considered a cone intersection.
 That's because the sphere at least touches the surface and the cone contains the sphere, so it must be that also the cone intersects the surface.
 In this case the point along the ray is treated as if it were on the surface, and the corresponding pixel is shaded as in a surface-hit situation.
 A section at $t$ of the cone, a sphere, a pixel and a surface is shown in \autoref{fig:cone_section}.
-Following the description in \cite{scratch_sdf}, the anti-aliasing algorithms has the following steps.
+Following the description in \cite{scratch_sdf}, the anti-aliasing algorithms has the following steps:
 \begin{enumerate}
-  \item For each pixel
+  \item for each pixel
   \item init pixel's color with black;
   \item evaluate the ray at $t$;
   \item if the object is at a distance $d \leq \epsilon$ then the ray intersects the object.
-    Shade the object, save the result on the pixel and return;
+    Shade the object, save the result in the pixel and return;
   \item if the object is at a distance $d \leq r$ then add the shading result blending it with the pixel's color;
   \item else move along the ray by $d$ and repeat the loop;
   \item when $t > D$, return the pixel's color.
@@ -343,4 +344,4 @@ As shown in \autoref{fig:cone_problem} we risk to add several contributions of t
 One solution could be storing each possible contribution and use only the one with the smallest $d$ to actually modify the pixel's color.
 This must be done whenever the ray passes sufficiently near to surface.
 
-\todo[inline]{Here images with anti-aliasing enabled}
+\todo[inline]{To render images with anti-aliasing enabled}

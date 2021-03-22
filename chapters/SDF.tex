@@ -4,7 +4,6 @@
 
 \section{Signed Distance Functions}
 \subsection{Theory}
-\todo[inline]{maybe better if definition are highlighted}
 As Hart says in the introduction of
 \emph{``Sphere tracing: a geometric method for antialiased ray tracing of implicit surfaces"}
 \cite{hart1996}, an implicit surface is defined by a function that, given a point in space, indicates whether the point is inside, on or outside the surface.
@@ -68,7 +67,7 @@ by \url{scratchapixel.com},
 these concepts are emphasized calling them respectively: 
 \emph{distance underestimate (implicit) functions} (DUFs) and 
 \emph{distance implicit functions} (DIFs).
-Remembering that $DUF(x) \leq DIF(x)$ for every DUFs and DIFs that respect the definitions above.
+Remembering that $DUF(x) \leq DIF(x)$ for every DUFs and DIFs respecting the definitions above.
 
 % TODO Nice imgs?
 % https://www.scratchapixel.com/images/upload/distance-fields/sphere-tracing-fig7.png?
@@ -85,11 +84,10 @@ Such $\lambda$ is called the Lipschitz constant.
 \noindent
 Of course there is no upper limit to $\lambda$, but there is a lower bound.
 Let $Lip(f)$ be the function returning such minimum value.
-Reworking \autoref{eq:lip_fun} we can observe that
-% commenta i passaggi
+Manipulating \autoref{eq:lip_fun} we can observe that
 \begin{align*}
   \lambda &\geq \dfrac{\abs{f(x) - f(y)}}{\norm{x - y}} \\
-  \lambda &\geq \dfrac{f(x) - f(y)}{\norm{x - y}}\\
+  \lambda &\geq \dfrac{f(x) - f(y)}{\norm{x - y}} \\ %\;\;\; \text{ remember $\lambda$ is positive } \\
   \lambda &\geq \lim_{\norm{x-y} \to 0} \dfrac{f(x) - f(y)}{x - y} = f'(x)
 \end{align*}
 the last step, given the continuity of $f$, permits us to estimate a safe lower bound for the Lipschitz constant.
@@ -157,16 +155,31 @@ This is only one example of the operation we can perform on implicit surfaces.
 
 
 \subsection{Constructive Solid Geometry}
-One of the major benefits we get from using SDFs is the easiness with which we can create complex shapes from few primitives, technique known as Constructive Solid Geometry (CSG).
+One of the major benefits we get using SDFs is the easiness with which we can create complex shapes from few primitives, technique known as Constructive Solid Geometry (CSG).
 CSG with Boolean operations is largely used in CAD software.
 %As said in \cite{hart1996, scratch_sdf, iquilez_sdf}
 With DIFs we can simulate:
 \begin{itemize}
-  \item union with the minimum, because we ``stop" at the first surface that as been found;
-  \item intersection with the maximum, because we ``ignore" the first surface if there's another after;
+  \item union with the minimum, because we ``stop" at the first surface that as been found
+    $$ min(f_1, f_2) $$
+  \item intersection with the maximum, because we ``ignore" the first surface if there's another after
+    $$ max(f_1, f_2) $$
   \item subtraction with the maximum between the first surface and the opposite of the second
-    $$ max(f_1, -f_2) $$.
+    $$ max(f_1, -f_2) $$
+
+  \item mixing, creating a shape that is in between of the given two, with interpolation of distances
+    $$ k*f_1 + (1-k) * f_2 \;\;\; \text{with $k\in[0,1]$} $$
 \end{itemize}
+%One interesting operation is blending % TODO?
+Here we listed the most common operations, but in theory we can use any mathematical function: sine, cosine, modulo, exponential, etc\dots
+All these operations can be arranged in a tree structure, even if the optimal evaluation order may not be always obvious.
+
+\todo[inline]{
+  Here I can add at least an half-page on blending \\
+  \href{https://www.iquilezles.org/www/articles/smin/smin.htm}{Inigo's article on blending}
+}
+
+Note that the signed distance bound functions are closed by CSG operations so we do not have to handle new cases when we manipulate the resulting shapes.
 
 \begin{figure}[!htb]
 \minipage{0.32\textwidth}
@@ -187,6 +200,13 @@ With DIFs we can simulate:
   \label{fig:subtraction}
 \endminipage
 \end{figure}
-Note that the signed distance bound functions are closed by CSG operations so we do not have to handle new cases.
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{img_03.png}
+  \caption{Left to right:
+    intersection, union and subtraction of a sphere and a torus.
+    TODO produce better image
+  }
+  \label{fig:csg}
+\end{figure}
 
-\todo[inline]{Mixing and Blending and "all functions work" (modulo example)}
