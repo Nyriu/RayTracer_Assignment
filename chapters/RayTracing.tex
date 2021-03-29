@@ -99,13 +99,10 @@ One of the last thing to consider is the field of view (fov), the view angle of 
 Assuming that the distance between the camera eye and the image plane equals to $1$, we want to know by how much enlarge or shrink the image plane horizontally and vertically.
 Knowing the fov angle $\alpha$ we just need to multiply the screen coordinates by $\tan(\alpha/2)$.
 
-The last thing to take in consideration is that out camera may not be always positioned in the world origin and look toward $-z$.
-To do so there are several options the one explained here is also 
-\todo[inline]{explain like if we are moving a point with a normal direction}
-
-
-
-
+The last thing to take in consideration is that our camera may not be always positioned in the world origin and look toward $-z$.
+One of the possible solutions is to consider the camera origin, also called eye, as a point with an associated normal direction, i.e. the camera's view direction.
+With this in mind we can move the point and its normal in the homogeneous 4D space with a 4D matrix.
+In this particular case we use the camera transformation matrix because we want to move from camera coordinates to the world ones.
 
 \subsection{Sphere Tracing}
 Introduced by Hart\cite{hart1996} in 1996, the sphere tracing algorithm gives a better alternative to other ray tracers like ray marching.
@@ -342,6 +339,7 @@ We accumulate the result with alpha blending, using the following formulas:
 Even if overall the method seems easy in the implementations we need to be careful.
 As shown in \autoref{fig:cone_problem} we risk to add several contributions of the same object.
 One solution could be storing each possible contribution and use only the one with the smallest $d$ to actually modify the pixel's color.
-This must be done whenever the ray passes sufficiently near to surface.
+This must be done whenever the ray passes sufficiently near to a surface.
 
-\todo[inline]{To render images with anti-aliasing enabled}
+% TODO
+%\todo[inline]{To render images with anti-aliasing enabled}

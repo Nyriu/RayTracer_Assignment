@@ -3,16 +3,76 @@
 %!TEX encoding = UTF-8 Unicode
 
 \section{Implementation}
-\todo[inline]{
-  Right now the implementation is subject to change.
-  I will complete this section when the source code is stable enough.\\
-  3 pages(?)
-  At the end images(?)
-}
-\noindent
-The code described in this section can be found at
-\href{https://github.com/Nyriu/RayTracer}{Nyriu/RayTracer}.
+In this section I provide a high level description of the C++ implementation of an SDF Renderer utilizing sphere tracing.
+The described code can be found at \href{https://github.com/Nyriu/RayTracer}{Nyriu/RayTracer}.
 
+\subsection{Compiling}
+The source code can be compiled with the common CMake workflow:
+\begin{lstlisting}
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+./main
+\end{lstlisting}
+The project was written and tested on a Manjaro operating system, but it should compile on other machines.
+There are two major dependencies: SDL2 and OpenGL Mathematics (GLM).
+The latter can be easily removed by re-implementing some of the matrix and vector operations.
+SDL2 is used to open a window that shows the rendered images.
+This dependence can be also removed by commenting out the relative lines from the \emph{Renderer} class and not compiling the \emph{Window} class.
+
+
+\subsection{Classes and Structure}
+The main header files and classes are:
+\begin{itemize}
+  \item \emph{ImplicitShape.h} in which is defined the homonymous abstract class and its children \emph{Sphere}, emph{Torus}, etc...
+    Each class represents an implicit surface described via an SDF function, and provides methods to compute point-to-set distances and normal at a given point.
+    The shapes have other properties such as the diffuse and specular colors.
+    In this file are also defined the CSG operation, here considered as a particular case of implicit shape.
+   Union, subtraction and intersection can be used to form a structure that resemble a binary tree;
+
+  \item the \emph{Camera} is a perspective camera and can be placed in a scene, oriented with a target point or with a given view direction, and has a modifiable field of view;
+  \item \emph{Ray} consists in a point and a direction and gives the possibility to calculate the ray position at a given $t$;
+
+  \item \emph{Light.h} describes an abstract \emph{Light} class that is implemented with the \emph{PointLight} class.
+    A light exposes publicly its color, position and intensity;
+
+  \item a \emph{Scene} consists of a series of shapes, lights and a camera.
+    The implementation offers methods to add and retrieve objects in the scene;
+
+  \item the \emph{Tracer} implements the sphere tracing algorithm and is responsible of pixel shading.
+    Here the ray's path is followed until its first bounce, then shadowing is verified and shading is computed.
+    If there's no bounce then a default color is returned.
+
+  \item the \emph{Renderer} asks the camera rays and passes them to the tracer.
+    When the tracer has returned the pixel's color, the renderer saves it to an \emph{Image} that is then displayed in a \emph{Window} or saved to file;
+
+  \item \emph{Color} abstraction of an RGB triplet;
+  \item \emph{Image} squared 2D grid of pixels, each accessible and modifiable with $xy$ coordinates.
+    As usual the top left corner is $(0,0)$, $x$ grows towards the right and $y$ towards the bottom;
+
+  \item the \emph{Window} handles SDL calls to open, close and update an SDL window.
+
+  \item \emph{geometry} contains geometric abstractions such as 3D points, vectors and matrices and operations on them;
+  \item \emph{utilities.h} contains miscellaneous functions both used in the implementation and during implementation.
+\end{itemize}
+The file \emph{main.cpp} can be modified to load different scenes and to change the output image properties, here we can also enable or disable the SDL window rendering only to file in PPM format.
+Inside \emph{scenes.cpp} different scenes are defined with different shapes and light as an example.
+A scene should also contain a camera, if that's not the case the renderer one will be used (if provided).
+
+
+
+
+
+
+
+
+
+
+
+
+\clearpage
 \noindent
 Some images just for showcase.
 
