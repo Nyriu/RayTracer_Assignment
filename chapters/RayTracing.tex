@@ -276,7 +276,7 @@ The ray can be computed with a modified version of the sphere tracing algorithm 
   \caption{A scene with 3 torus, a big sphere (the terrain) and two point lights rendered with hard shadows and no anti-aliasing.}
   %\label{fig:union}
 \end{figure}
-\todo[inline]{Add image without lighting/shading for comparison}
+%\todo[inline]{Add image without lighting/shading for comparison}
 
 \subsection{Anti-Aliasing}
 Since in ray tracing a scene is discretized in a finite number of pixel using sampling, ray tracing is subject to aliasing.
@@ -330,14 +330,13 @@ We accumulate the result with alpha blending, using the following formulas:
   \alpha &= \dfrac {1}{2} - \dfrac {d \sqrt{r^2 - d^2}} {\pi r^2} - \dfrac{1}{\pi}\arcsin \dfrac {d}{r}\\
   c &= c_1 + c_2 (1 - \alpha_1)
 \end{align*}
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=.4\linewidth]{cone_problem.png}
-  \caption{TODO caption}
-  \label{fig:cone_problem}
-\end{figure}
-Even if overall the method seems easy in the implementations we need to be careful.
-As shown in \autoref{fig:cone_problem} we risk to add several contributions of the same object.
+%%\begin{figure}[!htb]
+%%  \centering
+%%  \includegraphics[width=.4\linewidth]{cone_problem.png}
+%%  \caption{TODO caption}
+%%  \label{fig:cone_problem}
+%%\end{figure}
+Even if overall the method seems easy in the implementations we need to be careful, because we risk to add several contributions of the same object.
 One solution could be storing each possible contribution and use only the one with the smallest $d$ to actually modify the pixel's color.
 This must be done whenever the ray passes sufficiently near to a surface.
 

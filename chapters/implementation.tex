@@ -59,36 +59,26 @@ The main header files and classes are:
 \end{itemize}
 The file \emph{main.cpp} can be modified to load different scenes and to change the output image properties, here we can also enable or disable the SDL window rendering only to file in PPM format.
 Inside \emph{scenes.cpp} different scenes are defined with different shapes and light as an example.
-A scene should also contain a camera, if that's not the case the renderer one will be used (if provided).
+A scene should also contain a camera, if that's not the case the renderer's camera will be used (if provided).
 
 
+\subsection{Limitations and Future Improvements}
+The current implementation doesn't permit real time interaction.
+That's because the code run exclusively on CPU and sequentially.
+This limitation can be overcome re-implementing the shading part in parallel e.g. with CUDA.
+Since each ray does not depend on the others, the ray computation can naturally benefit from parallelism.
 
+As a consequence of the computation being sequential, the rendering has a single buffer.
+Thus the frame rate is limited by the generation of every single image.
+Also the code waits the image to be fully completed before showing it to the user.
 
-
-
-
-
-
-
-
+Another limitation is that the scene must be described in C++ and there is no hot reloading if something in the scene changes.
+In future could be interesting to create a simple parser for plain text files that describe scenes.
 
 \clearpage
-\noindent
-Some images just for showcase.
+\subsection{Generated Images}
 
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=\linewidth]{img_00.png}
-  %\caption{TODO}
-  %\label{fig:union}
-\end{figure}
-
-\begin{figure}[!htb]
-  \centering
-  \includegraphics[width=\linewidth]{img_01.png}
-  %\caption{TODO}
-  %\label{fig:union}
-\end{figure}
+\todo[inline]{create toruses without self shadowing}
 
 \begin{figure}[!htb]
   \centering
@@ -96,6 +86,9 @@ Some images just for showcase.
   %\caption{TODO}
   %\label{fig:union}
 \end{figure}
+
+\todo[inline]{show lambertian and different lighting}
+\todo[inline]{show CSG and highlight shadows on union shapes}
 
 \begin{figure}[!htb]
   \centering
