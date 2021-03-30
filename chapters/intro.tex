@@ -3,9 +3,14 @@
 %!TEX encoding = UTF-8 Unicode
 
 \section{Introduction}
-\todo[inline]{
-Starting idea and objectives. \\
-What I've achieved. \\
-Why ray tracing is interesting (and where can be used)(?) \\
-1 page
-}
+This work aims to be an initial approach to Implicit Surface Rendering with Sphere Tracing, a particular kind of ray tracing.
+The reasons behind the topic choice are several:
+in the last years real-time ray tracing has regained a lot of interest because can generate incredible images and the modern hardware can run it smoothly;
+also these algorithm are being approximated by neural networks, and the topic of Neural Rendering is gaining more and more attention.
+Since nowadays neural networks are being used inside or at the end of the graphic pipeline, e.g. DLSS, and ray tracing is being integrated to achieve realistic real-time reflections, it's plausible that in the future ray tracing will be approximated and/or optimized with deep learning techniques.
+
+So with this work I wanted to understand the basics of implicit surface rendering and to implement a C++ version of the encountered algorithms.
+This will give a good starting point to comprehend papers like \cite{nglod} in which is required an understanding of both the machine learning and ray tracing fields.
+The developed codebase will be used in future for integrating machine learning algorithm and for learning CUDA.
+
+
