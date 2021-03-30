@@ -78,23 +78,59 @@ In future could be interesting to create a simple parser for plain text files th
 \clearpage
 \subsection{Generated Images}
 
-\todo[inline]{create toruses without self shadowing}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{toruses_no_shadow.png}
+  \caption{Three grey toruses, a white point light, a soft ambient light, and no shadowing.}
+  \label{fig:toruses_no_shadow}
+\end{figure}
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=\linewidth]{img_02.png}
-  %\caption{TODO}
-  %\label{fig:union}
+  \includegraphics[width=\linewidth]{toruses_shadow.png}
+  \caption{As \autoref{fig:toruses_no_shadow} but with shadowing enabled. Note how the image gains credibility.}
+  \label{fig:toruses_shadow}
 \end{figure}
 
-\todo[inline]{show lambertian and different lighting}
-\todo[inline]{show CSG and highlight shadows on union shapes}
+\clearpage
 
 \begin{figure}[!htb]
   \centering
-  \includegraphics[width=\linewidth]{img_03.png}
-  %\caption{TODO}
-  %\label{fig:union}
+  \includegraphics[width=\linewidth]{subtraction.png}
+  \caption{The result of a subtraction between the union of three grey toruses and a sphere.
+    Note that the object cast (correctly) shadows on itself.
+    The blue color is given by an ambient light.
+  }
+  \label{fig:subtraction}
 \end{figure}
 
 
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{subtraction_intersection.png}
+  \caption{
+    Similar as \autoref{fig:subtraction_intersection} but now we subtract the (union of) toruses form the sphere.
+    At the right the intersection of the sphere and the (union of) toruses.
+    As before the color is given by an ambient light, because all shapes are grey.
+    Note the correct self shadowing both on subsection and interaction.
+  }
+  \label{fig:subtraction_intersection}
+\end{figure}
+
+\clearpage
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{lights_and_diffuse.png}
+  \caption{
+    Four sphere with different colors lightened by two light of different colors.
+    Note how the two sphere in the top left and right have the same color but the one to the left reflects different components of the left light.
+  }
+  \label{fig:lights_and_diffuse}
+\end{figure}
+
+One last note about self-hit of shadows rays.
+When a shadow ray bounces if the first step is too small we risk to consider the analyzed point as in shadow because we didn't move the point far enough from the current surface.
+This result in the point shadowing itself, giving the black pixels on the sphere surface of \autoref{fig:csg} at \autopageref{fig:csg} and on the toruses of \autoref{fig:toruses} at \autopageref{fig:toruses}.
+Since we have to handle also CS shapes we can not simply exclude the current surface from the hittable ones.
+Removing it will cause the shadows around the top right sphere in \autoref{fig:lights_and_diffuse} to disappear, but these shadows are correct.
+The implemented solution is to move the origin of the shadow ray along the surface normal (at the considered point).
