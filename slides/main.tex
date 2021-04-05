@@ -6,7 +6,9 @@
 \usepackage{graphicx} % Immagini fantastiche e...
 \graphicspath{        % dove trovarle
   {./images/},
-  {../images/2D/}
+  {../images/2D/},
+  {../images/3D/},
+  {../images/scratchpixel/},
 }
 
 %\usepackage{float}
@@ -217,8 +219,70 @@ This technique it known as Constructive Solid Geometry (CSG).
   \item subtraction $ max(f_1, -f_2) $
   \item mixing $ k*f_1 + (1-k) * f_2 \;\;\; \text{with $k\in[0,1]$} $
 \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Signed Distance Functions : Constructive Solid Geometry}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{img_03.png}
+\end{figure}
+From left to right:
+intersection, union and subtraction of a sphere and a torus.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% RAY TRACING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Ray Tracing : Rays and Cameras}
+
+A ray is defined as a point and a direction in formulas:
+$$
+r(t) = O + tR
+$$
+where $O,R \in \R^3$ and $R$ is a unit vector.
+
+At each time $t$ we can compute a point position on the ray.
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.5\linewidth]{ray.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Ray Tracing : Rays and Cameras}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.5\linewidth]{pinhole_camera.png}
+\end{figure}
+A pinhole camera inside a scene with a sphere and a light source.
+\end{frame}
+% QUA SI POTREBBE PARLARE DI PIU' DELLA CAMERA MA DIPENDE DA TEMPO E SPAZIO
+
+\begin{frame}
+\frametitle{Ray Tracing : Sphere Tracing}
+Ray Marching proceeds along the rays with a fixed step, with sphere tracing an adaptive step is used.
+
 
 \end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
