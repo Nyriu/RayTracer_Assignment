@@ -9,10 +9,10 @@ In the introduction of the book ``Ray Tracing from the Ground Up"\cite{rt_ground
 The former nowadays is the most popular because it's based on the graphics pipeline model and can easily take advantage of modern graphics cards.
 The basic idea is to project the objects on the scene into a 2D plane and then compute the appearance of the objects that can be seen.
 On the other hand, the image-space algorithms start from the pixel and try %to follow backward the 
-to figure out where the light came form for that pixel.
+to figure out where the light came from for that pixel.
 Following the light's path we can compute hard shadows, soft shadows, reflection, refraction,
  depth of field, motion blur, caustics, ambient occlusion, indirect lighting and other effects.
-But following every light ray's bounce it's extremely costly, especially if there are several light sources in the scene, and that's why this approach historically wasn't the one to be used for interactive application.
+But following every light ray's bounce it's extremely costly, especially if there are several light sources in the scene, and that's why this approach historically wasn't the one to be used for interactive applications.
 Instead, given the high quality and fidelity this method can achieve, it's been widely used to create movies, clips and images,
 %because, after an initial low-res prototyping, the computer can take all the resources and produce the best image
 In these application, after an initial low-res prototyping, the computer can elaborate the final product even for days.
@@ -35,7 +35,7 @@ if a ray hits an object color the corresponding square with the surface color;
 if a ray hits no objects then color the pixel with black (or a default color).
 Because the rays are parallel to one another this method gives us a really simple orthogonal camera.
 
-Orthogonal cameras are useful but in general prospective cameras are preferred because they resemble more the human eye.
+Orthogonal cameras are useful but in general prospective cameras are preferred because they resemble more to the human eye.
 To model a perspective camera all we have to do is to put a point behind the rectangle with the grid and generate rays that start from the point and pass through the grid's squares.
 The common choice is to make the rays pass through the squares' center. %, but we can also
 The model just described is called a pinhole camera, shown in \autoref{fig:pinhole}, because mimics the real life cameras.
@@ -93,36 +93,35 @@ the top left corner, $(0,0)$ in raster space, to $(-1,1)$ in screen space;
 the bottom right corner, $(ImageWidth,ImageHeight)$ in raster space, to $(1,-1)$ in screen space; and the last two accordingly.
 
 The $AspectRatio$ used in the formula equals $ImageWidth / ImageHeight$ and we must consider it when the output image is not squared.
-In fact we need to produce more pixel in one direction otherwise the generated image will look squished.
+In fact we need to produce more pixels in one direction otherwise the generated image will look squished.
 
 One of the last thing to consider is the field of view (fov), the view angle of the camera.
-Assuming that the distance between the camera eye and the image plane equals to $1$, we want to know by how much enlarge or shrink the image plane horizontally and vertically.
+Assuming that the distance between the camera eye and the image plane equals to $1$, we want to know by how much to enlarge or to shrink the image plane horizontally and vertically.
 Knowing the fov angle $\alpha$ we just need to multiply the screen coordinates by $\tan(\alpha/2)$.
 
-The last thing to take in consideration is that our camera may not be always positioned in the world origin and look toward $-z$.
+The last thing to take into consideration is that our camera may not be always positioned in the world origin and look toward $-z$.
 One of the possible solutions is to consider the camera origin, also called eye, as a point with an associated normal direction, i.e. the camera's view direction.
 With this in mind we can move the point and its normal in the homogeneous 4D space with a 4D matrix.
-In this particular case we use the camera transformation matrix because we want to move from camera coordinates to the world ones.
+In this particular case, we use the camera transformation matrix because we want to move from camera coordinates to the world ones.
 
 \subsection{Sphere Tracing}
 Introduced by Hart\cite{hart1996} in 1996, the sphere tracing algorithm gives a better alternative to other ray tracers like ray marching.
 In ray marching each ray is analyzed by constant steps of $t$.
-We can detect a ray-surface contact using the sign of the distance function: when the ray enters the surface the distance became negative.
+We can detect a ray-surface contact using the sign of the distance function: when the ray enters the surface the distance becomes negative.
 Let's say that for a ray $r$, $d(r(t_k),S) > 0$ and $d(r(t_{k+1}),S) < 0$, for some instant $t_k$ and the following instant $t_{k+1}$ and an implicit surface $S$.
-Then using bisection on the segment between the two points $r(t_k)$ and $r(t_{k+1})$
-we look for the point $P$ on the segment for which $d(P,S) = 0$.
-To actually find this point $P$ on the surface $S$ can be costly, so usually a point that is as near to the surface as a given threshold is found.
+Then, using bisection on the segment between the two points $r(t_k)$ and $r(t_{k+1})$, we look for the point $P$ on the segment for which $d(P,S) = 0$.
+To actually find this point $P$ on the surface $S$ can be costly, so usually a point that is as near to the surface up to a given threshold is found.
 
 We can speed up the algorithm by increasing the step size, i.e. $\abs{t_{k} - t_{k+1}}$, but doing so leads two problems:
 performing bisection is slower because the segments are longer;
-if an object is small the algorithm may evaluate the ray just before and after the object, thus not seeing it.
+if an object is small, the algorithm may evaluate the ray just before and after the object, thus not seeing it.
 While the first problem can be managed, the second can cause completely wrong images to be produced.
 What we would like is an algorithm with an adaptable step size, to go fast when there are no surfaces near and to slow down when there are objects in the proximity: sphere tracing does that.
 
 Remember that before we said that $d(x,S)$ for some $x \in \R^3$ means we can move $x$ in every direction by $d(x,S)$ being sure at worst to just hit the surface.
-In other words we are drawing a safe sphere around the point, in which there is no surface.
+In other words, we are drawing a safe sphere around the point, in which there is no surface.
 %If we evaluate the distance metric for each surface in the scene and take the minimum 
-Form the surface perspective this sphere is called an \emph{unbounding sphere}\cite{hart1996}, and the union of all the unbounding spheres describes the surface because no sphere penetrate the object.
+Form the surface perspective this sphere is called an \emph{unbounding sphere}\cite{hart1996}, and the union of all the unbounding spheres describes the surface because no spheres penetrate the object.
 The concept is approximately the opposite of \emph{bounding volume}, a volume that surrounds the object, because here we define an area of space not containing the object.
 In sphere tracing the ray-surface intersection is determined by a sequence of unbounding spheres, as shown in \autoref{fig:hit_and_miss}.
 \begin{figure}[!htb]
@@ -153,8 +152,8 @@ In sphere tracing the ray-surface intersection is determined by a sequence of un
 \noindent
 The pseudo algorithm for rendering one implicit surface is listed in \autoref{pscode:sphere_tracing}.
 In the pseudocode $D$ is the maximum ray traversal distance, $\epsilon$ is the minimum distance from a surface to consider a hit, $t$ and $r(t)$ are the usual ones and $f$ can be a DIF or a DUF.
-As said before the DUFs are ``more cautious" because are a lower bound to the maximum distance traversable without hitting the surface.
-When we can't use the exact signed distance function of the surface we can use safely its bound, knowing that the convergence will be slower because the algorithm will make more steps.
+As said before the DUFs are ``more cautious" because they are a lower bound to the maximum distance traversable without hitting the surface.
+When we can't use the exact signed distance function of the surface, we can use safely its bound, knowing that the convergence will be slower because the algorithm will make more steps.
 The following theorem from \cite{hart1996} shows that the speed drop is negligible because the algorithm is still linear even if we are using a signed distance bound.
 We look at sphere tracing as a root finding algorithm.
 \begin{theorem}
@@ -167,7 +166,7 @@ Given a function $f: \R \to \R$ with the Lipschitz bound $\lambda \geq Lip(f)$ a
   \end{equation}
   %https://en.wikipedia.org/wiki/Newton%27s_method
   to emphasize the similarities with the Newton's root finding method.
-  Let $r$ be the smallest be the smallest root greater than the initial point $t_0$.
+  Let $r$ be the smallest root greater than the initial point $t_0$.
   Since $f(r) = 0$, then $g(r) = r$, and at any non root $\abs{f(t_i)}/\lambda$ is positive.
   Hence \autoref{eq:st_seq} converges to the first root.
   Without loss of generality we assume $f$ to be non-negative in the region of interest, eliminating the need for the absolute value.
@@ -182,7 +181,7 @@ Given a function $f: \R \to \R$ with the Lipschitz bound $\lambda \geq Lip(f)$ a
     e_{i+1} &= t_{i+1} - r = g(t_i) - g(r) =\\
             &= g'(r)e_i + \text{higher-order terms}
   \end{align*}
-  Since $g'(r)$ is constant in the iteration \autoref{eq:st_seq} converges linearly to $y$.
+  Since $g'(r)$ is constant in the iteration, \autoref{eq:st_seq} converges linearly to $y$.
 \end{proof}
 \begin{corollary}
   Sphere tracing converges quadratically if and only if the function is steepest at its first root.
@@ -241,7 +240,7 @@ $$h(t) = \left< x(t), y(t), z(t) \right>$$
 to be a parametric definition of a curve that lies on the surface and that passes through $P$.
 We also define 
 $$g(t) = f(h(t)) = 0$$
-Note that exists a particular $t_0$ such that
+Note that there exists a particular $t_0$ such that
 $$g(t_0) = f(h(t_0)) = f(x(t_0), y(t_0), z(t_0)) = f(x_0, y_0, z_0) = f(P)$$ %%f(x_0, y_0, z_0) = 0$$
 Now we can calculate the gradient at 
 \begin{align*}
@@ -252,7 +251,7 @@ Now we can calculate the gradient at
 %\leftrightarrow \nabla f|_P \cdot r'(t_0) = 0.
 \end{align*}
 The equation comes from the higher dimensions version of the chain rule $g'(t) = h'(t) \cdot f'(g(t))$.
-The vector form comes from $a \cdot b = a_x b_x + a_y b_y + a_z b_z$, and highlight the perpendicularity between the two vectors.
+The vector form comes from $a \cdot b = a_x b_x + a_y b_y + a_z b_z$, and highlights the perpendicularity between the two vectors.
 
 Now that we have the surface normal $N$ at $P$ we can use it inside a rendering equation that, in simple words, gives the amount of light reflected by the surface.
 Putting in formulas
@@ -279,7 +278,7 @@ The ray can be computed with a modified version of the sphere tracing algorithm 
 %\todo[inline]{Add image without lighting/shading for comparison}
 
 \subsection{Anti-Aliasing}
-Since in ray tracing a scene is discretized in a finite number of pixel using sampling, ray tracing is subject to aliasing.
+Since in ray tracing a scene is discretized in a finite number of pixels using sampling, ray tracing is subject to aliasing.
 This topic is discussed extensively in \cite{rt_groundup} and with a particular attention towards sphere tracing and Hart's method in \cite{hart1996, scratch_sdf}, 
 It's important to note that we can not resolve in a definitive way the aliasing problem, we can only mitigate its effects with anti-aliasing techniques.
 
