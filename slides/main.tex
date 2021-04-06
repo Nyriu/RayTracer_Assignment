@@ -9,6 +9,7 @@
   {../images/2D/},
   {../images/3D/},
   {../images/scratchpixel/},
+  {../images/hart1996/},
 }
 
 %\usepackage{float}
@@ -27,6 +28,17 @@
 
 %\usepackage{algpseudocode,algorithm,algorithmicx}
 
+
+\usepackage{listings}
+\lstset{
+  showspaces=false,
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  %numbers=left,
+  %numbers=none,
+  numberstyle=\small,
+  mathescape
+}
  
 % ================================ %
 %          Cose Personali          %
@@ -86,7 +98,7 @@
       \item Rays and Cameras
       \item Sphere Tracing
       \item Lighting and Shadows
-      \item Cone-Tracing
+      \item Anti-Aliasing: Cone Tracing
     \end{itemize}
   \item Implementation
 \end{itemize}
@@ -266,30 +278,180 @@ A pinhole camera inside a scene with a sphere and a light source.
 
 \begin{frame}
 \frametitle{Ray Tracing : Sphere Tracing}
-Ray Marching proceeds along the rays with a fixed step, with sphere tracing an adaptive step is used.
+Ray Marching proceeds along the rays with a fixed step, in Sphere Tracing an adaptive step is used.
+
+The step size is given by a SDF (or more generally by a DUF).
+
+$d(x,S)$, for some $x \in \R^3$ and surface $S$, means we can move $x$ in every direction by $d(x,S)$ being sure at worst to just hit the surface.
+
+In other words we are drawing a safe sphere around the point, in which there is no surface.
+That's an \emph{unbounding sphere}.
+\frametitle{Ray Tracing : Sphere Tracing}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.3\linewidth]{hit_and_miss.png}
+\end{figure}
+\end{frame}
 
 
+\begin{frame}
+\frametitle{Ray Tracing : Sphere Tracing}
+\begin{theorem}
+Given a function $f: \R \to \R$ with the Lipschitz bound $\lambda \geq Lip(f)$ and an initial point $t_0$, sphere tracing converges linearly to the smallest root grater than $t_0$.
+\end{theorem}
+\begin{proof}
+  In the assignment.
+\end{proof}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Ray Tracing : Sphere Tracing}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.8\linewidth]{st_pixel_comput_cost.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Ray Tracing : Lighting and Shadows}
+To correctly compute the shading we need the surface normal at the point.
+
+With SDFs the normal can be computed as the gradient $\nabla f$ of the implicit function $f(x,y,z)$
+at $P = \left< x_0, y_0, z_0 \right>$.
+
+Observing the rate-of-change in the proximity of $P$ can be done numerically with 
+\begin{align*}
+  \nabla f_{x_0} &= f(x_0+\delta, y_0       , z_0       ) - f(x_0-\delta, y_0       , z_0)\\
+  \nabla f_{y_0} &= f(x_0       , y_0+\delta, z_0       ) - f(x_0       , y_0-\delta, z_0)\\
+  \nabla f_{z_0} &= f(x_0       , y_0       , z_0+\delta) - f(x_0       , y_0       , z_0-\delta)
+\end{align*}
+\begin{align*}
+  \nabla f = \left< \nabla f_{x_0}, \nabla f_{y_0}, \nabla f_{z_0} \right>
+\end{align*}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Ray Tracing : Lighting and Shadows}
+The surface normal is used inside the rendering equation.
+
+The following gives the amount of light reflected by the surface
+$$
+\dfrac{ (n \cdot l) c_{light} }
+{ 4 \pi }
+$$
+where $n$ is the surface normal, $l$ a unit vector pointing the light and $c_{light}$ its color.
+
+Remember that the dot product $n \cdot l$ gives the cosine of the angle of incidence of the light rays.
+
+The denominator comes from the solution of an integral over a hemisphere centered in $P$.
 \end{frame}
 
 
 
+\begin{frame}
+\frametitle{Ray Tracing : Lighting and Shadows}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.9\linewidth]{toruses_no_shadow.png}
+\end{figure}
+Image with shadows disabled.
+\end{frame}
+
+\begin{frame}
+\frametitle{Ray Tracing : Lighting and Shadows}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.9\linewidth]{toruses_shadow.png}
+\end{figure}
+Image with shadows enabled.
+\end{frame}
+
+\begin{frame}
+\frametitle{Ray Tracing : Lighting and Shadows}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{img_02.png}
+\end{figure}
+Note the incorrect ``in shadow" pixels.
+\end{frame}
+
+\begin{frame}
+\frametitle{Ray Tracing : Anti-Aliasing}
+In ray tracing aliasing can't be fully resolved.
+
+The common solution is to sample more colors per pixel and average the results, but doing so is costly.
+
+Cones can be seen as a set of rays.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.6\linewidth]{cone.png}
+\end{figure}
+\end{frame}
 
 
 
+\begin{frame}
+\frametitle{Ray Tracing : Anti-Aliasing}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=.5\linewidth]{cone_section.png}
+\end{figure}
+A section of cone, pixel extension and unbounding sphere.
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% IMPLEMENTATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+  \item C++ with two libraries: SDL2 and OpenGL Mathematics (GLM);
+  \item all implemented ``from scratch" starting from the theory or examples/tutorials;
+  \item rendering done sequentially on CPU (space for future improvements);
+  \item the code is cross platform and can be compiled easily with CMake;
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Implementation : Examples}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{subtraction.png}
+\end{figure}
+\end{frame}
 
 
 
+\begin{frame}
+\frametitle{Implementation : Examples}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{subtraction_intersection.png}
+\end{figure}
+\end{frame}
 
 
 
+\begin{frame}
+\frametitle{Implementation : Examples}
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=\linewidth]{lights_and_diffuse.png}
+\end{figure}
+\end{frame}
 
 
-
-
-
-
-
-
+\begin{frame}
+  Thank You
+\end{frame}
 
 
 %\begin{frame}
